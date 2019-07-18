@@ -108,7 +108,7 @@ class CPSchedule(QObject):
                     if timer:
                         count = id.index(cID)*1000 + len(completed)
                         self.l_progress.emit(count/total)
-                        Timer(id, cID, len(completed)-1, time.time()-t)
+                        # Timer(id, cID, len(completed)-1, time.time()-t)
                 except BaseException:
                     break
 

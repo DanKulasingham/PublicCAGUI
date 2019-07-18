@@ -4,14 +4,14 @@ import git, os
 
 if __name__ == "__main__":
     import sys
-    app = QtWidgets.QApplication.instance()
+    app = QtWidgets.QApplication(sys.argv)
 
     splashPic = QtGui.QPixmap('icons\\splash.png')
     splash = QtWidgets.QSplashScreen(splashPic, QtCore.Qt.WindowStaysOnTopHint)
     splash.show()
 
-    g = git.cmd.Git(os.path.dirname(os.path.realpath(__file__)))
-    g.pull('https://github.com/DanKulasingham/CutplanGUI.git', 'master')
+    g = git.Git('.')
+    g.pull()
 
     from CAGUI import CAGUI
     from cutplan._classes import CA_MainWindow
