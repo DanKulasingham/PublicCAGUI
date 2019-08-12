@@ -433,13 +433,36 @@ class LogPlotter(object):
         )
         return
 
+    def ShowOpenFace(self, coords, colour=(0.2, 0.2, 1)):
+        posx = coords.OpenFace[0]
+        posy = coords.OpenFace[1]
+        negx = coords.OpenFace[2]
+        negy = coords.OpenFace[3]
+        maxZ = npmax(coords.Z)
+
+        x1 = [[posx, negx, negx, posx, posx]]*2
+        y1 = [[posy, posy, negy, negy, posy]]*2
+        z1 = [[0, 0, 0, 0, 0], [maxZ, maxZ, maxZ, maxZ, maxZ]]
+        x2 = [[posx-1, negx+1, negx+1, posx-1, posx-1]]*2
+        y2 = [[posy-1, posy-1, negy+1, negy+1, posy-1]]*2
+        z2 = [[maxZ, maxZ, maxZ, maxZ, maxZ], [0, 0, 0, 0, 0]]
+        X = x1 + x2
+        Y = y1 + y2
+        Z = z1 + z2
+
+        self.scene.mlab.mesh(
+            X, Y, Z, color=colour
+        )
+
     def FrontView(self):
         if self.showFront:
             self.scene.mlab.view(azimuth=180, elevation=180)
+
             if self.log is not None:
                 self.log.scene.camera.zoom(7.5)
         else:
             self.scene.mlab.view(azimuth=165, elevation=181.5, roll=180)
+
             if self.log is not None:
                 self.log.scene.camera.zoom(7)
         return
