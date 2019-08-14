@@ -649,11 +649,7 @@ class CAGUI(object):
             self.widget.CPSched, self.LDDir)
         self.widget.LogPlotter.showPerc = showPerc
         self.widget.LogPlotter.showFront = showFront
-        self.widget.LogPlotter.showLog = self.checkBox.isChecked()
-        self.widget.LogPlotter.showBoards = self.checkBox_3.isChecked()
-        self.widget.LogPlotter.showFL = self.checkBox_2.isChecked()
-        self.widget.LogPlotter.show3m = self.checkBox_4.isChecked()
-        self.widget.LogPlotter.showOpenFace = self.checkBox_OF.isChecked()
+        self.on_checkBox()
         self.tableView.selectRow(tempID)
         self.on_idChange()
         self.progressCP = sum(self.ready)
