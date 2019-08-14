@@ -34,7 +34,6 @@ class LogPlotGUI(HasTraits):
         self.show3m = False
         self.showPerc = False
         self.showFront = False
-        self.showOpenFace = False
 
         if self.CPSched.Cutplans.shape[0] > 0:
             c = self.CPSched.Cutplans.iloc[self.id]
@@ -43,7 +42,7 @@ class LogPlotGUI(HasTraits):
             self.coords = GetLogCoords(log, c)
             self.myOff = self.coords.Offset
             self.plotter = LogPlotter(self.scene, c, self.coords)
-            # self.plotter.PlotLog()
+            self.plotter.PlotLog()
         else:
             c = None
             self.plotter = None
@@ -52,14 +51,14 @@ class LogPlotGUI(HasTraits):
     def scene_load(self):
         self.plotter.FrontView()
 
-    def drawFunction(self):
+    def redraw_scene(self):
         # Notice how each mlab call points explicitely to the figure it
         # applies to.
 
         # CURRENTLY CAN ONLY OPEN FIRST CUTPLAN IN SCHEDULE
         c = self.CPSched.Cutplans.iloc[self.id]
         log = self.CPSched.AverageLog(self.id)
-        self.plotter.FrontView()
+        self.scene.mlab.clf()
         self.coords = GetLogCoords(log, c, False)
         self.myOff = self.coords.Offset
         self.plotter = LogPlotter(
@@ -77,31 +76,7 @@ class LogPlotGUI(HasTraits):
             uC2 = self.CPSched.GetMinWLog(self.id, 1)
             self.plotter.ShowOval(
                 uC2, self.coords, cbL=3, colour=(0.75, 0.1, 0.1))
-        if self.showOpenFace:
-            self.plotter.ShowOpenFace(self.coords)
-
-    def redraw_scene(self):
-        self.scene.mlab.clf()
-        self.drawFunction()
         self.plotter.FrontView()
-        # self.plotter.FrontView()
-
-    def ChangeView(self):
-        self.view = self.scene.mlab.view()
-        self.plotter.FrontView()
-
-    def update_scene(self):
-        v = self.scene.mlab.view()
-        roll = self.scene.mlab.roll()
-        zoom = self.scene.camera.parallel_scale
-
-        self.scene.mlab.clf()
-        self.drawFunction()
-        self.plotter.FrontView()
-
-        self.scene.mlab.view(*v)
-        self.scene.mlab.roll(roll)
-        self.scene.camera.parallel_scale = zoom
 
     # The layout of the dialog created
     view = View(Group(

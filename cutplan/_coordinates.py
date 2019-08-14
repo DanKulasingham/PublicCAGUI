@@ -5,7 +5,7 @@ Functions that focus on getting coordinates of log
 """
 from numpy import \
     linspace, empty, transpose, max, min, cos, sin, nan, \
-    array as arraynp, isnan, sqrt, arange, zeros, argmax, append
+    array as arraynp, isnan, sqrt, arange, zeros
 from scipy.optimize import minimize_scalar as FindMin
 from numpy.matlib import repmat
 from math import pi, floor
@@ -16,12 +16,11 @@ from cutplan._helper import SumRecov, GetWane, BoardRecovery
 
 # class for how coordinates will be stored
 class Coordinates():
-    def __init__(self, X=0, Y=0, Z=0, Offset=[0, 0], OpenFace=[0, 0, 0, 0]):
+    def __init__(self, X=0, Y=0, Z=0, Offset=[0, 0]):
         self.X = X
         self.Y = Y
         self.Z = Z
         self.Offset = Offset
-        self.OpenFace = OpenFace
 
     def __repr__(self):
         return (
@@ -219,12 +218,7 @@ class Recovery():
             wane = GetWane(coords, -cW, t, w, True)
             self.WB["PrimOutL"][1] = BoardRecovery(wane, coords.Z, bL)
 
-            cW = cW + t
-
-        OF = cantH <= (coords.OpenFace[1] - coords.OpenFace[3])
-        OF = OF and (cW*2 <= (coords.OpenFace[0] - coords.OpenFace[2]))
-
-        return OF
+        return
 
     def RunRecoveryRand(self, coordsOri, offS=3):
         # initialisations
@@ -240,8 +234,7 @@ class Recovery():
             coordsOri.X,
             coordsOri.Y,
             coordsOri.Z,
-            (coordsOri.Offset[0] + rX, coordsOri.Offset[1] + rY),
-            coordsOri.OpenFace
+            (coordsOri.Offset[0] + rX, coordsOri.Offset[1] + rY)
         )
 
         # cant calculations
@@ -356,12 +349,7 @@ class Recovery():
             wane = GetWane(coords, -cW, t, w, True)
             self.WB["PrimOutL"][1] = BoardRecovery(wane, coords.Z, bL)
 
-            cW = cW + t
-
-        OF = cantH <= (coords.OpenFace[1] - coords.OpenFace[3])
-        OF = OF and (cW*2 <= (coords.OpenFace[0] - coords.OpenFace[2]))
-
-        return OF
+        return
 
     def FindRecovery(self, board, coords, cH, bL, t, w, split, k):
         if t > 0:
@@ -498,7 +486,7 @@ def GetLogCoords(log, c, Opt=True):
     #     zs = repmat(z, 101, 1)
     # =========================================================================
     swPos = 1/3*log.Length
-    z = append(arange(0, log.Length, 100), log.Length)
+    z = arange(0, log.Length, 100)
     thetas = linspace(0, 2*pi, 100)
     cos2 = cos(thetas)*cos(thetas)
     sin2 = sin(thetas)*sin(thetas)
@@ -550,71 +538,10 @@ def GetLogCoords(log, c, Opt=True):
 # =============================================================================
     sweepX = f_sweep(coords.Z)
 
-    of = GetOpenFace(log)
-    coords.OpenFace[0] = of[0]
-    coords.OpenFace[1] = of[1]
-    coords.OpenFace[2] = -of[0]
-    coords.OpenFace[3] = -of[1]
-    minid = argmax(coords.X[50]+sweepX)
-    if minid > 0:
-        d = coords.Y[25:50, minid]
-
-        # Open Face openface set here
-        inout = d < (75/2)
-        i = len(inout)-1
-        while inout[i-1]:
-            if i == 0:
-                break
-            else:
-                i -= 1
-
     coords.X += sweepX
     coords.Y += sweepY
-
-    if minid > 0:
-        d = coords.X[25:50, minid]
-        coords.OpenFace[2] = d[i]
 
     if Opt:
         OptBoardPos(coords, c)
 
     return coords
-
-
-# Gets the max length to maintain open face
-def GetOpenFace(log, openface=75):
-    thetas = linspace(0, 0.5*pi, 100)
-    cos2 = cos(thetas)*cos(thetas)
-    sin2 = sin(thetas)*sin(thetas)
-    a = log.SED/2
-    b = (log.MinSED+log.SED)/4
-    if isnan(log.MinSED):
-        b = log.SED/2
-    rhos = (a*b)/sqrt(b*b*cos2 + a*a*sin2)
-
-    dx = cos(thetas)*rhos
-    dy = sin(thetas)*rhos
-
-    i = 0
-    inout = dy < (openface/2)
-    while inout[i+1]:
-        if (i+2) == len(inout):
-            i += 1
-            break
-        else:
-            i += 1
-
-    ofx = dx[i]
-
-    i = len(inout)-1
-    inout = dx < (openface/2)
-    while inout[i-1]:
-        if i == 1:
-            i = 0
-            break
-        else:
-            i -= 1
-
-    ofy = dy[i]
-
-    return (ofx, ofy)

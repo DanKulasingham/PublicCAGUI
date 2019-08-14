@@ -347,19 +347,6 @@ class CAGUI(object):
         self.rbPieceCount.setChecked(True)
         self.CA_Layout.addLayout(self.rbHoriLayout)
 
-        self.OFHoriLayout = QtWidgets.QHBoxLayout()
-        self.OFHoriLayout.setObjectName("OFHoriLayout")
-        self.OFLabel = QtWidgets.QLabel(self.frame_2)
-        self.OFLabel.setObjectName("OFLabel")
-        self.OFHoriLayout.addWidget(self.OFLabel)
-        self.OFTextBox = QtWidgets.QLineEdit(self.frame_2)
-        self.OFLabel.setObjectName("OFTextBox")
-        self.OFHoriLayout.addWidget(self.OFTextBox)
-        self.checkBox_OF = QtWidgets.QCheckBox(self.frame_2)
-        self.checkBox_OF.setObjectName("checkBox_OF")
-        self.OFHoriLayout.addWidget(self.checkBox_OF)
-        self.CA_Layout.addLayout(self.OFHoriLayout)
-
         spacerItem2 = QtWidgets.QSpacerItem(
             20, 40, QtWidgets.QSizePolicy.Minimum,
             QtWidgets.QSizePolicy.Expanding)
@@ -385,7 +372,6 @@ class CAGUI(object):
         self.checkBox_2.stateChanged.connect(self.on_checkBox)
         self.checkBox_3.stateChanged.connect(self.on_checkBox)
         self.checkBox_4.stateChanged.connect(self.on_checkBox)
-        self.checkBox_OF.stateChanged.connect(self.on_checkBox)
         if not self.ready[self.id]:
             self.checkBox_2.setEnabled(False)
             self.checkBox_3.setEnabled(False)
@@ -440,9 +426,6 @@ class CAGUI(object):
         self.RecoveryTB.setText("{:.1f}%".format((actVol / avgLog.Vol)*100))
         self.SimRecoveryTB.setText("{:.1f}%".format((simLV / avgLog.Vol)*100))
 
-        self.OFTextBox.setText("{:.1f}%".format(
-            self.CPSched.OpenFacePerc[self.id]*100))
-
         self.AnalTVSetUp()
 
     def ClearAnalysis(self):
@@ -478,7 +461,7 @@ class CAGUI(object):
     def on_UnitChange(self):
         if self.widget.LogPlotter.showPerc:
             self.widget.LogPlotter.showPerc = False
-            self.widget.LogPlotter.update_scene()
+            self.widget.LogPlotter.redraw_scene()
             icon = QtGui.QIcon()
             icon.addPixmap(
                 QtGui.QPixmap("icons\\dims2.png"),
@@ -488,7 +471,7 @@ class CAGUI(object):
             self.UnitButton.setToolTip("Show board recovery percentage")
         else:
             self.widget.LogPlotter.showPerc = True
-            self.widget.LogPlotter.update_scene()
+            self.widget.LogPlotter.redraw_scene()
             icon = QtGui.QIcon()
             icon.addPixmap(
                 QtGui.QPixmap("icons\\percent2.png"),
@@ -599,7 +582,6 @@ class CAGUI(object):
         sf.append(self.CPSched.completed)
         sf.append(self.CPSched.LogVol)
         sf.append(self.CPSched.BoardBreakdown)
-        sf.append(self.CPSched.OpenFacePerc)
         # sf.append(self.CPSched.LogVolRand)
         # sf.append(self.CPSched.SavedCoords)
         with open(filePath, "wb") as save_file:
@@ -776,8 +758,6 @@ class CAGUI(object):
                 self.CPSched.completed = lf[6]
                 self.CPSched.LogVol = lf[7]
                 self.CPSched.BoardBreakdown = lf[8]
-                if len(lf) > 9:
-                    self.CPSched.OpenFacePerc = lf[9]
                 self.CPThreadSetUp()
                 # self.CPSched.LogVolRand = lf[9]
                 # self.CPSched.SavedCoords = lf[10]
@@ -881,8 +861,6 @@ class CAGUI(object):
         self.CutbackTable.setEnabled(val)
         self.rbPieceCount.setEnabled(val)
         self.rbVolume.setEnabled(val)
-        self.OFTextBox.setEnabled(val)
-        self.checkBox_OF.setEnabled(val)
 
     def CPThreadSetUp(self):
         self.thread = QtCore.QThread()
@@ -927,8 +905,7 @@ class CAGUI(object):
         self.widget.LogPlotter.showBoards = self.checkBox_3.isChecked()
         self.widget.LogPlotter.showFL = self.checkBox_2.isChecked()
         self.widget.LogPlotter.show3m = self.checkBox_4.isChecked()
-        self.widget.LogPlotter.showOpenFace = self.checkBox_OF.isChecked()
-        self.widget.LogPlotter.update_scene()
+        self.widget.LogPlotter.redraw_scene()
 
     def on_idChange(self):
         selected = self.tableView.selectionModel().selectedRows()
@@ -964,7 +941,6 @@ class CAGUI(object):
             _translate("MainWindow", "Show Full-Length Area"))
         self.checkBox_3.setText(_translate("MainWindow", "Show Boards"))
         self.checkBox_4.setText(_translate("MainWindow", "Show 3m Area"))
-        self.checkBox_OF.setText(_translate("MainWindow", "Show Open Face"))
         a = str(self.progressCP)
         b = str(len(self.widget.CPSched.completed))
         self.loadingText.setText(_translate(
@@ -984,8 +960,6 @@ class CAGUI(object):
         self.tableView.selectRow(self.id)
         self.rbPieceCount.setText(_translate("MainWindow", "Piece Count"))
         self.rbVolume.setText(_translate("MainWindow", "Volume"))
-        self.OFLabel.setText(_translate(
-            "MainWindow", "Lost Open Face\nPercentage"))
 
     def on_LoadLogs(self):
         quit_msg = "Cannot update logs when simulation running."
