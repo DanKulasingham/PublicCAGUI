@@ -12,7 +12,7 @@ from pathos.multiprocessing import ProcessingPool as Pool, cpu_count
 from statistics import mean
 
 from cutplan._coordinates import GetLogCoords, CalcBoardVol, Recovery
-from cutplan._helper import Timer, CalcUseable, GetUseableCoords
+from cutplan._helper import CalcUseable, GetUseableCoords
 from cutplan._boards import BoardBreakdown
 
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
@@ -52,6 +52,7 @@ class CPSchedule(QObject):
         self.MinW = np.zeros((self.Cutplans.shape[0], 2))
         self.completed = [False]*self.Cutplans.shape[0]
         self.BoardBreakdown = [None]*self.Cutplans.shape[0]
+        self.OpenFacePerc = [0]*self.Cutplans.shape[0]
         self.progress = 0
 
     @pyqtSlot()
@@ -118,6 +119,7 @@ class CPSchedule(QObject):
             minH = [1000000, 1000000]
             minWID = [0, 0]
             minHID = [0, 0]
+            numOF = 0
             for lID in range(LD.shape[0]):
                 coords = completed[lID]
                 newW, newH = CalcUseable(coords)
@@ -134,7 +136,8 @@ class CPSchedule(QObject):
                 if newH1 < minH[1]:
                     minH[1] = newH1
                     minHID[1] = lID
-                recovery.RunRecoveryRand(coords, offS=2.725)
+                OF = recovery.RunRecoveryRand(coords, offS=2.725)
+                numOF += not OF
                 # recovery.RunRecovery(coords)
                 self.AveR[cID].AddRecovery(recovery)
                 self.BoardBreakdown[cID].AddRecovery(recovery)
@@ -156,6 +159,7 @@ class CPSchedule(QObject):
             self.MinWLog[cID][1] = minWID[1]
             self.MinW[cID][1] = minW[1]
             self.MinH[cID][1] = minH[1]
+            self.OpenFacePerc[cID] = numOF/LD.shape[0]
 
             time.sleep(0.1)
 
@@ -192,6 +196,7 @@ class CPSchedule(QObject):
         self.MinW = np.array(temp)
         self.completed.append(False)
         self.BoardBreakdown.append(None)
+        self.OpenFacePerc.append(0)
 
     def DeleteRow(self, row):
         self.Cutplans = self.Cutplans.drop(
@@ -208,6 +213,7 @@ class CPSchedule(QObject):
         self.MinW = np.delete(self.MinW, [row], axis=0)
         del self.completed[row]
         del self.BoardBreakdown[row]
+        del self.OpenFacePerc[row]
 
     # def PlotResults(self):
     #     fig, axs = plt.subplots(nrows=1, ncols=2)
