@@ -61,7 +61,7 @@ class CPSchedule(QObject):
         cbL = 3
         timer = True
         id = []
-        t = time.time()
+        # t = time.time()
         if id == []:
             start_id = sum(self.completed)
             id = list(range(start_id, self.Cutplans.shape[0]))
@@ -136,9 +136,10 @@ class CPSchedule(QObject):
                 if newH1 < minH[1]:
                     minH[1] = newH1
                     minHID[1] = lID
-                OF = recovery.RunRecoveryRand(coords, offS=2.725)
+                # OF = recovery.RunRecoveryRand(coords, offS=2.725)
+                # numOF += not OF
+                OF = recovery.RunRecovery(coords)
                 numOF += not OF
-                # recovery.RunRecovery(coords)
                 self.AveR[cID].AddRecovery(recovery)
                 self.BoardBreakdown[cID].AddRecovery(recovery)
                 self.LogVol[cID, lID] = CalcBoardVol(
