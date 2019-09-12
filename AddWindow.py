@@ -107,10 +107,10 @@ class AddWindow(object):
         if len(selected) == 0:
             self.tableView.selectRow(0)
             self.id = 0
-            self.chosen = self.data.iloc[0]
+            self.chosen = self.data.CutplanID[0]
         else:
             self.id = selected[0].row()
-            self.chosen = self.data.iloc[self.id]
+            self.chosen = self.data.CutplanID[self.id]
 
     def ping(self):
         response = ossystem("ping -c 1 " + self.host)

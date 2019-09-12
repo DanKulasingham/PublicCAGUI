@@ -637,7 +637,38 @@ class CAGUI(object):
 
     def AddFunction(self):
         tempID = self.id
-        newCP = self.AddCPUI.chosen
+        newCPID = self.AddCPUI.chosen
+
+        # Ping to see if can connect, use wait cursor
+        QtWidgets.QApplication.setOverrideCursor(
+            QtGui.QCursor(QtCore.Qt.WaitCursor))
+        ping = ossystem(
+            "ping -n 1 " + self.host
+        )
+        QtWidgets.QApplication.restoreOverrideCursor()
+        quit_msg = "Check internet connection to Log Scanner Server."
+        if ping:
+            QtWidgets.QMessageBox.critical(
+                self.MainWindow, "Connection Failed", quit_msg,
+                QtWidgets.QMessageBox.Ok
+            )
+            return
+
+        conn = sql.connect(
+            'Driver={SQL Server};'
+            'Server=192.168.3.55;'
+            'Database=SequalLogScanner;'
+            'UID=sa;'
+            'PWD=gg8976@;')
+
+        f = open("support\\cpquery2.sql", 'r')
+        sqltext = f.read()
+        sqltext = sqltext.replace("@CPID", str(newCPID))
+        data = pd.read_sql(sqltext, conn)
+        newCP = data.iloc[0]
+        conn.close()
+        f.close()
+
         self.CPSched.AddNewRow(newCP)
         self.ready.append(False)
         self.TVSetUp()
