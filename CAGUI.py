@@ -1085,9 +1085,15 @@ class CAGUI(object):
             des = sorts.Description[i]
             des = des.replace('-41', '-40')
             des = des.replace('-47', '-46')
+            des2 = des.replace('-46', '-45')
             d = data[i]
             f = open(folder+des+".csv", "w", newline="")
             f.write(d.to_csv(index=False))
+            f.close()
+            if des2 != des:
+                f = open(folder+des2+".csv", "w", newline="")
+                f.write(d.to_csv(index=False))
+                f.close()
 
         QtWidgets.QApplication.restoreOverrideCursor()
 
